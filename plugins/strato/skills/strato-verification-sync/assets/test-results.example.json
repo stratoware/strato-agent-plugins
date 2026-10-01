@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "mapping_revision": 1,
+  "mapping_sha256": "06fd9b6ba1b35315fe2ab2664b54b6df7e33738f5b628bb3eece5b913030dbec",
+  "strato": {
+    "tenant_origin": "https://example.stratoware.io",
+    "product_slug": "controller"
+  },
+  "repository": "example/controller",
+  "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "workflow": {
+    "run_id": "12345",
+    "run_attempt": 1,
+    "job": "unit-tests",
+    "matrix": {
+      "python": "3.12"
+    }
+  },
+  "collection": {
+    "status": "complete",
+    "notes": []
+  },
+  "results": [
+    {
+      "test_case_id": "TC001",
+      "test_case_revision": 3,
+      "step_id": "example-returned-step-id",
+      "framework": "pytest",
+      "suite_selector": "tests/test_limits.py::TestLimits",
+      "test_selector": "tests/test_limits.py::TestLimits::test_limit",
+      "execution_id": "tests/test_limits.py::TestLimits::test_limit[low]",
+      "parameters": {
+        "limit": "low"
+      },
+      "attempt": 1,
+      "native_outcome": "passed",
+      "outcome": "passed",
+      "duration_ms": 12.5,
+      "diagnostic_refs": []
+    }
+  ]
+}

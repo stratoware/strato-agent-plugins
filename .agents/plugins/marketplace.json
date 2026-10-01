@@ -1,0 +1,20 @@
+{
+  "name": "strato",
+  "interface": {
+    "displayName": "Strato"
+  },
+  "plugins": [
+    {
+      "name": "strato",
+      "source": {
+        "source": "local",
+        "path": "./plugins/strato"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

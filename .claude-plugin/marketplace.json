@@ -1,0 +1,11 @@
+{
+  "name": "strato",
+  "owner": { "name": "Stratoware LLC" },
+  "plugins": [
+    {
+      "name": "strato",
+      "source": "./plugins/strato",
+      "description": "Work with Strato DHF records and sync designs and verification coverage."
+    }
+  ]
+}

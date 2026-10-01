@@ -1,0 +1,104 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "mapping_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "strato": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tenant_origin": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://[^/]+/?$"
+        },
+        "product_slug": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["tenant_origin", "product_slug"]
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "framework": {
+            "type": "string",
+            "minLength": 1
+          },
+          "suite_selector": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "test_case_id": {
+            "type": "string",
+            "pattern": "^TC[0-9]+$"
+          },
+          "test_case_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "review_state": {
+            "enum": ["proposed", "accepted", "unknown"]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "selector": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "step_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": ["selector", "step_id"]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "framework",
+          "suite_selector",
+          "source_path",
+          "test_case_id",
+          "test_case_revision",
+          "review_state",
+          "steps"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "mapping_revision",
+    "strato",
+    "repository",
+    "cases"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Strato test mapping",
+  "description": "Immutable per-run mapping of suites to Test Cases and tests to protocol steps."
+}

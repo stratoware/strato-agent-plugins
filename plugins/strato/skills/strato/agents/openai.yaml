@@ -1,0 +1,4 @@
+interface:
+  display_name: "Strato"
+  short_description: "Find and update Strato product records"
+  default_prompt: "Use $strato to help me work with my product's DHF records."

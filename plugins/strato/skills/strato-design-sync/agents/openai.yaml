@@ -1,0 +1,4 @@
+interface:
+  display_name: "Strato Design Sync"
+  short_description: "Reconcile engineering work with Strato DHF designs"
+  default_prompt: "Use $strato-design-sync to reconcile this project with its Strato specifications and detailed design."

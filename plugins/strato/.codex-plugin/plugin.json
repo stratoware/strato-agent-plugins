@@ -1,0 +1,24 @@
+{
+  "name": "strato",
+  "version": "0.2.3",
+  "license": "MIT",
+  "repository": "https://github.com/stratoware/strato-agent-plugins",
+  "description": "Work with Strato DHF records and sync designs and verification coverage.",
+  "author": {
+    "name": "Stratoware LLC"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Strato",
+    "shortDescription": "Work with Strato records, designs, and verification.",
+    "longDescription": "Ask Strato to find, explain, or update DHF records. Use the design and verification sync skills to reconcile local engineering work, test coverage, and result traceability with Strato. Requires a Strato MCP connection. Findings appear in chat; selected changes follow normal governance. Verification sync does not execute tests or write Test Runs.",
+    "developerName": "Stratoware LLC",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": [
+      "Use $strato to show the requirements for this product.",
+      "Use $strato-design-sync to reconcile this project with its Strato specifications and designs.",
+      "Use $strato-verification-sync to reconcile local tests with Strato Test Cases and propose test mappings."
+    ]
+  }
+}

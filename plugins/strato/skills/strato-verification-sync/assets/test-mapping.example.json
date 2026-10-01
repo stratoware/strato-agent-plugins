@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "mapping_revision": 1,
+  "strato": {
+    "tenant_origin": "https://example.stratoware.io",
+    "product_slug": "controller"
+  },
+  "repository": "example/controller",
+  "cases": [
+    {
+      "framework": "pytest",
+      "suite_selector": "tests/test_limits.py::TestLimits",
+      "source_path": "tests/test_limits.py",
+      "test_case_id": "TC001",
+      "test_case_revision": 3,
+      "review_state": "unknown",
+      "steps": [
+        {
+          "selector": "tests/test_limits.py::TestLimits::test_limit",
+          "step_id": "example-returned-step-id"
+        }
+      ]
+    }
+  ]
+}
