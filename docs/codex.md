@@ -48,7 +48,7 @@ You can also type:
 Use $strato to update the architecture for this product to reflect the new acquisition service.
 ```
 
-Select **Strato Design Sync** or **Strato Verification Sync** from the same slash menu, or type `$strato-design-sync` or `$strato-verification-sync`. These reconcile designs or verification coverage with Strato. Read the findings and recommendations in chat, then choose what to work on. All three skills summarize confirmed Strato changes in `.strato/sync-history.json`.
+Select **Strato Design Sync** or **Strato Verification Sync** from the same slash menu, or type `$strato-design-sync` or `$strato-verification-sync`. These establish or reconcile designs and verification coverage with Strato. Work through open questions in chat, then confirm the proposed plan. All three skills summarize confirmed Strato changes in `.strato/sync-history.json`.
 
 ## 4. Update the plugin
 

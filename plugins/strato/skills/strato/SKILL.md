@@ -13,19 +13,13 @@ Discover the connected MCP tools and product, using existing project context whe
 
 ## Make requested changes
 
-Apply explicitly requested changes without asking for the same permission again. Follow Strato governance; submitting a change does not accept or release it.
-
-Read affected records, including pending changes, before writing. Preserve unrelated content and links: supplied relationship lists replace that category. Use revision checks when available.
-
-Use the bulk tools for record creation, updates, folder creation, and moves, including one-entry changes. Respect batch limits and create dependencies first using returned IDs. Inspect every result and reconcile uncertain outcomes before retrying.
+Apply explicitly requested changes without asking for the same permission again. Read and follow [MCP operations](references/mcp-operations.md) for bulk writes, preservation of unrelated content and links, revision checks, governance, and recording confirmed changes.
 
 Follow Strato's specification-authoring guidance: concise noun-phrase titles and verifiable “shall” requirements. Name components by function and put component selections and internal register or byte layouts in linked designs when useful. Retain details that express required interface or compatibility constraints. Give each specification the behavior, conditions, and supported acceptance criteria needed to write a Test Case; ask for missing criteria.
 
-For imports, copy source IDs unchanged into `external_reference_id`, without added prefixes or repetition in titles. Keep descriptions focused on the requirement and necessary technical context; discuss source citations and import or review status in chat. Use Markdown and Mermaid for designs and discover engineering artifact support from the server.
+Use Markdown and Mermaid for designs and discover engineering artifact support from the server.
 
-Organize new records into logical folders, reusing existing groupings where appropriate.
-
-Confirm results by readback and summarize the outcome in chat. Append one event to the JSON list in `.strato/sync-history.json`, preserving previous entries, with a `timestamp` and product-specific `summary` of confirmed Strato changes, including partial progress.
+Before creating or moving folders, read [Folder organization](references/folder-organization.md). Reuse suitable existing groupings and resolve overlapping taxonomies before adding another branch.
 
 ## Sync workflows
 
