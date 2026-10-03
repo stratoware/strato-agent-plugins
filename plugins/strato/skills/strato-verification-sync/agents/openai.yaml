@@ -1,4 +1,4 @@
 interface:
   display_name: "Strato Verification Sync"
-  short_description: "Reconcile tests and Strato verification coverage"
-  default_prompt: "Use $strato-verification-sync to reconcile local tests with Strato Test Cases and prepare selected test and GitHub reporting changes."
+  short_description: "Establish or reconcile Strato verification coverage"
+  default_prompt: "Use $strato-verification-sync to assess this project's verification baseline with Strato, work through open questions, and agree a plan for tests, procedures, and Test Cases."

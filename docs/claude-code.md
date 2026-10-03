@@ -71,7 +71,7 @@ To reconcile designs or verification coverage with Strato, use one of the sync w
 /strato:strato-verification-sync
 ```
 
-Add a product name or scope if needed. Read the findings and recommendations in chat, then choose what to work on. All three skills summarize confirmed Strato changes in `.strato/sync-history.json`.
+Add a product name or scope if needed. Work through open questions in chat, then confirm the proposed plan. All three skills summarize confirmed Strato changes in `.strato/sync-history.json`.
 
 ## 4. Update the plugin
 

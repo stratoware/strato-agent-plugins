@@ -28,14 +28,14 @@ Use an immutable release tag instead of `stable` when adding the marketplace:
 
 | Client      | Marketplace source                             |
 | ----------- | ---------------------------------------------- |
-| Codex       | `stratoware/strato-agent-plugins --ref v0.2.3` |
-| Claude Code | `stratoware/strato-agent-plugins@v0.2.3`       |
+| Codex       | `stratoware/strato-agent-plugins --ref v0.2.4` |
+| Claude Code | `stratoware/strato-agent-plugins@v0.2.4`       |
 
 Refreshing a pinned tag keeps that release. To change a registered Codex marketplace to a specific release:
 
 ```bash
 codex plugin marketplace remove strato
-codex plugin marketplace add stratoware/strato-agent-plugins --ref v0.2.3
+codex plugin marketplace add stratoware/strato-agent-plugins --ref v0.2.4
 codex plugin add strato@strato
 ```
 
@@ -43,7 +43,7 @@ For Claude Code:
 
 ```text
 /plugin marketplace remove strato
-/plugin marketplace add stratoware/strato-agent-plugins@v0.2.3
+/plugin marketplace add stratoware/strato-agent-plugins@v0.2.4
 /plugin install strato@strato
 ```
 
@@ -68,7 +68,7 @@ Although the server's write permission includes Test Runs, the verification skil
 
 ## Sync history
 
-All three skills give answers and findings directly in chat. After applying selected Strato changes and confirming the results, they append one entry to `.strato/sync-history.json`. Each entry contains a timestamp and a short summary, for example:
+All three skills keep findings, questions, decisions, and plans in chat. After applying selected Strato changes and confirming the results, they append one entry to `.strato/sync-history.json`. Each entry contains only a timestamp and a short summary of confirmed Strato changes, for example:
 
 ```json
 [
@@ -82,6 +82,8 @@ All three skills give answers and findings directly in chat. After applying sele
 Missing or empty history means first sync. Each review compares the current repo with current Strato records, including any unfinished work. Reviews, local-only edits, and failed or unconfirmed writes do not add events. Partial completion is recorded as partial.
 
 ## Verification mappings and results
+
+Verification sync covers automated tests and manual or bench procedures across software, firmware, electrical, and mechanical work. It assesses existing checks before import and proposes missing coverage against specifications. Automation mappings and GitHub reporting are optional; case changes must still reconcile any existing mappings they affect.
 
 - [Test mapping schema](../plugins/strato/skills/strato-verification-sync/assets/test-mapping.schema.json) · [Example](../plugins/strato/skills/strato-verification-sync/assets/test-mapping.example.json)
 - [GitHub result schema](../plugins/strato/skills/strato-verification-sync/assets/test-results.schema.json) · [Example](../plugins/strato/skills/strato-verification-sync/assets/test-results.example.json)

@@ -6,7 +6,7 @@ Work with your Strato Design History File from Codex or Claude Code. Maintained 
 | --- | --- |
 | `/strato` | Find, explain, create, update, or link DHF records. Add your direction when invoking it. |
 | `/strato-design-sync` | Establish a Strato baseline or reconcile the repo and Strato specifications and designs in both directions. |
-| `/strato-verification-sync` | Reconcile tests and Strato Test Cases, address coverage gaps, and prepare GitHub result reporting. |
+| `/strato-verification-sync` | Establish or reconcile tests, procedures, and Strato Test Cases; optionally prepare GitHub result reporting. |
 
 ## Get started
 
@@ -23,8 +23,8 @@ The public repository contains release snapshots. Development history is maintai
 ## What to expect
 
 1. Invoke **Strato** with a direction, or choose a dedicated sync skill for a systematic comparison.
-2. Read answers, findings, and recommendations directly in chat. For a new baseline, the design skill recommends importing existing specifications or authoring them from the available evidence.
-3. Select recommended changes to apply, or request an edit directly. Strato changes follow your permissions and normal review process.
+2. Work through the sync skill's questions in chat and review the proposed plan. On first sync, this includes improving existing Strato records and structure where needed.
+3. Confirm the plan to apply it, or request a specific edit directly. Strato changes follow your permissions and normal review process.
 
 Sync skills inspect the current folder and available Strato records and present findings in chat. Confirmed Strato changes are summarized in `.strato/sync-history.json`. Verification sync does not execute tests or write Test Runs.
 

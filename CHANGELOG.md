@@ -1,5 +1,13 @@
 # Release notes
 
+## 0.2.4
+
+- Guide both sync skills through focused questions in chat, a proposed update plan, and confirmation before applying it. Include improvements to existing Strato records and logical folder structure when establishing a baseline.
+- Establish or reconcile verification coverage across software, firmware, electrical, and mechanical work. Assess existing tests and manual or bench procedures before import and propose improvements to Test Cases and their organization.
+- Keep automation mapping and GitHub reporting optional while maintaining existing mappings affected by case changes. Verification sync does not execute tests or write Test Runs; mapping and result schemas remain version 1.
+- Keep questions, decisions, and plans in chat. Limit sync history events to a timestamp and short summary of confirmed Strato changes, and retain selected organizing principles separately as project preferences.
+- Share sync workflow, MCP write, import field, and history guidance across the skills to keep their behavior consistent.
+
 ## 0.2.3
 
 - Publish the plugin through a public repository containing release snapshots, with development history maintained separately.

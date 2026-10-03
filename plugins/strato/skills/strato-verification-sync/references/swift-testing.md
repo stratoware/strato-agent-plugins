@@ -1,6 +1,6 @@
 # Swift testing
 
-Use this reference for XCTest, Swift Testing, or projects using both. Apply the shared [mapping and result contract](github-results.md); the existing schemas need no Swift-specific extension.
+Use this reference for XCTest, Swift Testing, or projects using both. When automation mapping or reporting is selected, apply the shared [mapping and result contract](github-results.md); the existing schemas need no Swift-specific extension.
 
 ## Identify the test surface
 

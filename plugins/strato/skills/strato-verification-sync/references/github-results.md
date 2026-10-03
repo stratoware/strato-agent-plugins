@@ -1,6 +1,15 @@
 # GitHub mapping and result artifacts
 
-Use the customer's existing test framework, reporter, and native reports to implement this Strato artifact contract.
+Use the customer's existing test framework, reporter, and native reports when automation mapping or result reporting is selected.
+
+## Automated test structure
+
+- A class or framework-equivalent suite maps to one Test Case.
+- A test function or equivalent leaf test maps to one step.
+- Shared fixtures become setup instructions.
+- Parameterized executions produce separate results under their mapped step.
+
+Use the nearest containing suite for nested tests and meaningful groupings for ungrouped tests. Resolve ambiguous groupings before exporting results. Step numbering does not imply execution order. These conventions guide automated Test Case authoring even before a mapping file or exporter is selected; manual procedures do not need to follow a framework's structure.
 
 ## Mapping
 
