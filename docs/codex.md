@@ -4,6 +4,8 @@
 
 You need a Strato account and a Codex version with plugin marketplace support.
 
+For guided installation on macOS and Linux with an OS credential store, open **Profile → Connectors → Set up Codex** in an updated Strato workspace and follow [guided Codex setup](codex-guided-setup.md). The manual instructions below remain available on every supported platform.
+
 ## 1. Install the plugin
 
 Run these commands in a terminal:

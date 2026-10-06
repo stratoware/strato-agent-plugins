@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.2.5
+
+- Add guided Codex installation from Strato **Profile → Connectors** on macOS and Linux with an OS credential store. Approve workspace access in the browser; setup installs the plugin and configures MCP without copying a token or editing configuration.
+- Store connection credentials in macOS Keychain or Linux Secret Service, preserve unrelated Codex settings, verify DHF read access, and restore the previous connection if setup fails. Restart Codex and verify access in a new chat after installation.
+- Keep manual setup available for Claude Code, Windows, and remote clients. Shared skills and verification schemas are unchanged.
+
 ## 0.2.4
 
 - Guide both sync skills through focused questions in chat, a proposed update plan, and confirmation before applying it. Include improvements to existing Strato records and logical folder structure when establishing a baseline.

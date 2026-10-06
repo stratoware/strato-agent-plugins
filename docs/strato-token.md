@@ -4,9 +4,9 @@
 
 An MCP access token lets your coding assistant access Strato on your behalf.
 
-## 1. Open MCP connections
+## 1. Open Connectors
 
-Sign in to your Strato tenant. Select **Profile** in the top navigation, then **Settings → MCP connections → Create token**.
+Sign in to your Strato tenant. Select **Profile** in the top navigation, then **Settings → Connectors → Advanced/manual connections → Create token**. Earlier Strato versions label this section **MCP connections**, as shown in the screenshots below.
 
 ![Strato Settings with MCP connections selected and the Create token button visible](images/strato-mcp-connections.png)
 
