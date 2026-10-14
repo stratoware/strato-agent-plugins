@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -93,10 +92,7 @@ def test_local_stacks_do_not_overwrite_each_other_or_hosted_connections():
         "https://acme.stratoware.localhost:13100",
         "https://acme.stratoware.localhost:13200",
     ]:
-        command = configuration.helper_command("/bin/uv", Path("/setup.py"), origin)
-        args = shlex.split(command)
-        assert ("--allow-local" in args) == workspace.is_local_workspace(origin)
-        text, name = configuration.prepare_config(text, origin, command)
+        text, name = configuration.prepare_config(text, origin)
         names.append(name)
     assert len(set(names)) == 3
     assert set(tomlkit.parse(text)["mcp_servers"]) == set(names)
@@ -114,7 +110,7 @@ http_headers = { Authorization = "old-secret", "X-Custom" = "retain" }
 [mcp_servers.other]
 url = "https://other.example/mcp"
 """
-    updated, name = configuration.prepare_config(original, ORIGIN, "helper-command")
+    updated, name = configuration.prepare_config(original, ORIGIN)
     data = tomlkit.parse(updated)
     assert name == "strato"
     assert updated.startswith("# my settings")
@@ -124,14 +120,12 @@ url = "https://other.example/mcp"
     assert data["mcp_servers"][name]["http_headers"] == {"X-Custom": "retain"}
     assert data["mcp_servers"][name]["default_tools_approval_mode"] == "prompt"
     assert data["mcp_servers"][name]["enabled_tools"] == ["products_list_v1"]
-    assert configuration.prepare_config(updated, ORIGIN, "helper-command")[0] == updated
+    assert configuration.prepare_config(updated, ORIGIN)[0] == updated
 
 
 def test_distinct_tenants_and_new_write_approval():
-    text, name = configuration.prepare_config("", ORIGIN, "helper")
-    text, other = configuration.prepare_config(
-        text, "https://other.stratoware.io", "helper2"
-    )
+    text, name = configuration.prepare_config("", ORIGIN)
+    text, other = configuration.prepare_config(text, "https://other.stratoware.io")
     servers = tomlkit.parse(text)["mcp_servers"]
     assert set(servers) == {name, other}
     assert servers[name]["default_tools_approval_mode"] == "writes"
@@ -142,109 +136,68 @@ def test_distinct_tenants_and_new_write_approval():
     [
         '[mcp_servers.strato-acme]\nurl="https://different.example/mcp"',
         '[mcp_servers.a]\nurl="https://acme.stratoware.io/api/mcp"\n[mcp_servers.b]\nurl="https://acme.stratoware.io/api/mcp"',
-        '[mcp_servers.a]\nurl="https://acme.stratoware.io/api/mcp"\n[mcp_servers.a.oauth]\nclient_id="client"',
+        'mcp_oauth_credentials_store="file"',
         "invalid [ toml",
     ],
 )
 def test_conflicting_configuration_is_not_replaced(original):
     with pytest.raises(workspace.SetupError):
-        configuration.prepare_config(original, ORIGIN, "helper")
+        configuration.prepare_config(original, ORIGIN)
 
 
-def test_credential_command_quotes_paths_without_secrets():
-    args = shlex.split(
-        configuration.helper_command(
-            "/some path/uv", Path("/user's path/setup_codex.py"), ORIGIN
-        )
-    )
-    assert args == [
-        "/some path/uv",
-        "run",
-        "--quiet",
-        "--locked",
-        "--script",
-        "/user's path/setup_codex.py",
-        "headers",
-        "--workspace-url",
-        ORIGIN,
-    ]
-
-
-class TestCredentialStorage:
+class TestNativeOAuth:
     @pytest.fixture
-    def store(self, monkeypatch):
-        store = Mock()
-        store.get_password.return_value = "prior-secret"
-        monkeypatch.setattr(configuration, "credential_store", lambda: store)
-        return store
+    def login(self, monkeypatch):
+        run = Mock(return_value=SimpleNamespace(returncode=0))
+        monkeypatch.setattr(configuration.subprocess, "run", run)
+        monkeypatch.setattr(configuration, "remove_legacy_credential", Mock())
+        return run
 
-    def test_token_never_enters_files_and_backup_survives_retry(self, tmp_path, store):
-        original = b'model = "mine"\n'
-        (tmp_path / "config.toml").write_bytes(original)
-        name = configuration.save_connection(tmp_path, ORIGIN, TOKEN, "/bin/uv")
-        store.set_password.assert_called_with(credentials.SERVICE, ORIGIN, TOKEN)
-        assert name == "strato-acme"
-        config = tmp_path / "config.toml"
-        first = config.read_bytes()
-        configuration.save_connection(tmp_path, ORIGIN, TOKEN, "/bin/uv")
-        assert config.read_bytes() == first
-        assert (tmp_path / "config.toml.strato-backup").read_bytes() == original
-        assert (config.stat().st_mode & 0o777) == 0o600
-        assert not (tmp_path / ".strato-setup.lock").exists()
-        for path in tmp_path.rglob("*"):
-            if path.is_file():
-                assert TOKEN.encode() not in path.read_bytes()
-
-    def test_failed_config_write_restores_prior_credential(
-        self, tmp_path, store, monkeypatch
-    ):
-        write = configuration.atomic_write
-
-        def fail_config(path, data):
-            if path.name == "config.toml":
-                raise OSError("read-only")
-            write(path, data)
-
-        monkeypatch.setattr(configuration, "atomic_write", fail_config)
-        with pytest.raises(OSError):
-            configuration.save_connection(tmp_path, ORIGIN, TOKEN, "/bin/uv")
-        store.set_password.assert_called_with(
-            credentials.SERVICE, ORIGIN, "prior-secret"
-        )
-
-    def test_concurrent_setup_fails_without_credential_change(self, tmp_path, store):
-        with configuration.config_lock(tmp_path), pytest.raises(workspace.SetupError):
-            configuration.save_connection(tmp_path, ORIGIN, TOKEN, "/bin/uv")
-        store.set_password.assert_not_called()
-
-    @pytest.mark.parametrize(
-        "failure", [RuntimeError("acknowledgment failed"), KeyboardInterrupt()]
-    )
-    def test_failed_remote_confirmation_restores_existing_connection(
-        self, tmp_path, store, failure
+    def test_native_login_preserves_settings_and_never_handles_tokens(
+        self, tmp_path, login
     ):
         original = b'model = "mine"\n'
         config = tmp_path / "config.toml"
         config.write_bytes(original)
-        with pytest.raises(type(failure)):
-            configuration.save_connection(
-                tmp_path, ORIGIN, TOKEN, "/bin/uv", Mock(side_effect=failure)
-            )
-        assert config.read_bytes() == original
-        store.set_password.assert_called_with(
-            credentials.SERVICE, ORIGIN, "prior-secret"
+        name = configuration.save_connection(tmp_path, ORIGIN, "/bin/codex")
+        assert name == "strato-acme"
+        login.assert_called_once_with(
+            ["/bin/codex", "mcp", "login", name],
+            capture_output=True,
+            timeout=660,
+            check=False,
         )
+        data = tomlkit.parse(config.read_text())
+        assert data["mcp_oauth_credentials_store"] == "keyring"
+        assert data["mcp_servers"][name]["oauth"]["client_id"] == "strato-codex-prod"
+        assert (
+            data["mcp_servers"][name]["oauth"]["callback_url"]
+            == "http://127.0.0.1/callback"
+        )
+        assert "http_headers_helper" not in data["mcp_servers"][name]
+        assert (tmp_path / "config.toml.strato-backup").read_bytes() == original
+        assert config.stat().st_mode & 0o777 == 0o600
+        assert not (tmp_path / ".strato-setup.lock").exists()
+        assert not (tmp_path / "strato-setup").exists()
 
-    def test_failed_confirmation_removes_new_credentials_and_config(
-        self, tmp_path, store
+    def test_failed_login_restores_settings_without_printing_output(
+        self, tmp_path, login
     ):
-        store.get_password.return_value = None
-        with pytest.raises(RuntimeError):
-            configuration.save_connection(
-                tmp_path, ORIGIN, TOKEN, "/bin/uv", Mock(side_effect=RuntimeError())
-            )
-        assert not (tmp_path / "config.toml").exists()
-        store.delete_password.assert_called_with(credentials.SERVICE, ORIGIN)
+        original = b'model = "mine"\n'
+        config = tmp_path / "config.toml"
+        config.write_bytes(original)
+        login.return_value = SimpleNamespace(
+            returncode=1, stdout=b"private", stderr=b"private"
+        )
+        with pytest.raises(workspace.SetupError) as error:
+            configuration.save_connection(tmp_path, ORIGIN, "/bin/codex")
+        assert "private" not in str(error.value)
+        assert config.read_bytes() == original
+
+    def test_concurrent_setup_does_not_start_login(self, tmp_path, login):
+        with configuration.config_lock(tmp_path), pytest.raises(workspace.SetupError):
+            configuration.save_connection(tmp_path, ORIGIN, "/bin/codex")
+        login.assert_not_called()
 
 
 def test_plaintext_or_unknown_keyring_is_rejected(monkeypatch):
@@ -310,7 +263,7 @@ def test_foreign_marketplace_is_never_installed(monkeypatch):
 def test_current_codex_accepts_generated_config(tmp_path, origin):
     if not configuration.shutil.which("codex"):
         pytest.skip("Codex is not installed")
-    text, name = configuration.prepare_config("", origin, "strato-setup-probe")
+    text, name = configuration.prepare_config("", origin)
     (tmp_path / "config.toml").write_text(text)
     result = configuration.subprocess.run(
         ["codex", "mcp", "get", name, "--json"],
@@ -319,4 +272,5 @@ def test_current_codex_accepts_generated_config(tmp_path, origin):
         capture_output=True,
         text=True,
     )
-    assert json.loads(result.stdout)["transport"]["http_headers_helper"]
+    assert json.loads(result.stdout)["transport"]["url"] == origin + "/api/mcp"
+    assert json.loads(result.stdout)["transport"]["http_headers_helper"] is None

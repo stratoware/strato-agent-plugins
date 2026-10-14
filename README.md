@@ -14,11 +14,11 @@ Work with your Strato Design History File from Codex or Claude Code. Maintained 
 | ----------------------------------- | ----------------------------------------------- |
 | [**Set up Codex →**](docs/codex.md) | [**Set up Claude Code →**](docs/claude-code.md) |
 
-Each guide covers installation, connecting Strato, your first sync, updates, and troubleshooting.
+Codex supports guided installation and native OAuth. Claude plugin packaging is retained; Claude connection support is planned.
 
-For guided Codex installation on macOS and Linux with an OS credential store, start in Strato **Profile → Connectors → Set up Codex**. [Approve access in your browser](docs/codex-guided-setup.md), then restart Codex to use the connection.
+For guided Codex installation on macOS and Linux with an OS credential store, start in Strato **Profile → Connectors → Open Codex**. [Approve access in your browser](docs/codex-guided-setup.md), then restart Codex to use the connection.
 
-You need a Strato account with MCP access. Claude Code runtime testing is still pending.
+You need a Strato account with MCP access. Claude Code connection implementation and runtime testing remain deferred.
 
 The public repository contains release snapshots. Development history is maintained separately.
 

@@ -5,7 +5,7 @@ import re
 import socket
 import ssl
 from ipaddress import ip_address
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError
 from urllib.parse import urlsplit
 from urllib.request import (
     HTTPRedirectHandler,
@@ -99,88 +99,39 @@ def mcp_opener(origin: str):
     return build_opener(NoRedirect(), ProxyHandler({}), HTTPSHandler(context=context))
 
 
-def verify_token(origin: str, token: str, *, allow_local: bool = False) -> None:
-    """Check authenticated DHF read access without returning customer records."""
+def verify_oauth_server(origin: str, *, allow_local: bool = False) -> None:
     origin = workspace_origin(origin, allow_local=allow_local)
-    if not re.fullmatch(r"pqmcp_[0-9a-f-]{36}_[A-Za-z0-9_-]{32,128}", token):
-        raise SetupError(
-            "Strato returned an invalid connection credential. Start setup again from Connectors."
-        )
     opener = mcp_opener(origin)
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-        "Accept": "application/json, text/event-stream",
-    }
-    requests = [
-        (
-            "initialize",
-            {
-                "protocolVersion": "2025-03-26",
-                "capabilities": {},
-                "clientInfo": {"name": "strato-setup", "version": "1"},
-            },
-        ),
-        ("notifications/initialized", {}),
-        ("tools/call", {"name": "products_list_v1", "arguments": {}}),
-    ]
-    for request_id, (method, params) in enumerate(requests, 1):
-        message = {"jsonrpc": "2.0", "method": method, "params": params}
-        if method != "notifications/initialized":
-            message["id"] = request_id
-        body = json.dumps(message).encode()
-        try:
-            with opener.open(
-                Request(origin + "/api/mcp", data=body, headers=headers), timeout=20
-            ) as response:
-                if method == "notifications/initialized":
-                    continue
-                session = response.headers.get("Mcp-Session-Id")
-                if session:
-                    headers["Mcp-Session-Id"] = session
-                payload = response.read(2_000_001)
-                if len(payload) > 2_000_000:
-                    raise SetupError(
-                        "The MCP response was too large. Contact Strato support."
-                    )
-                result = json.loads(payload)
-        except HTTPError as exc:
-            if exc.code == 401:
-                raise SetupError(
-                    "This token is invalid, expired, revoked, or belongs to another workspace."
-                ) from None
-            if exc.code == 403:
-                raise SetupError(
-                    "Access was denied. Check DHF read permission and workspace network policies."
-                ) from None
-            raise SetupError(
-                "Strato could not complete the connection check. Try again later."
-            ) from None
-        except URLError as exc:
-            if isinstance(exc.reason, ssl.SSLCertVerificationError):
-                raise SetupError(
-                    "The workspace HTTPS certificate is not trusted or does not match its hostname. "
-                    "For local development, install the stack's mkcert CA in the OS trust store and retry."
-                ) from None
-            raise SetupError(
-                "Could not reach the MCP endpoint. Check the workspace address and that the stack is running."
-            ) from None
-        except (TimeoutError, ValueError):
-            raise SetupError(
-                "Could not read a valid MCP response. Check the workspace address and network access."
-            ) from None
+    try:
+        with opener.open(
+            Request(
+                origin + "/.well-known/oauth-authorization-server",
+                headers={"Accept": "application/json"},
+            ),
+            timeout=20,
+        ) as response:
+            body = response.read(16385)
+            if len(body) > 16384:
+                raise ValueError()
+            metadata = json.loads(body)
         if (
-            not isinstance(result, dict)
-            or result.get("id") != request_id
-            or "error" in result
+            metadata.get("issuer") != origin
+            or metadata.get("authorization_endpoint") != origin + "/oauth/authorize"
+            or metadata.get("token_endpoint") != origin + "/oauth/token"
+            or "none" not in metadata.get("token_endpoint_auth_methods_supported", [])
+            or "S256" not in metadata.get("code_challenge_methods_supported", [])
+            or not metadata.get("authorization_response_iss_parameter_supported")
         ):
+            raise ValueError()
+    except URLError as error:
+        if isinstance(error.reason, ssl.SSLCertVerificationError):
             raise SetupError(
-                "The MCP connection check failed. Check token permissions and try again."
-            )
-        data = result.get("result")
-        if not isinstance(data, dict) or data.get("isError"):
-            raise SetupError(
-                "DHF read access could not be confirmed. Check the token's permissions."
-            )
-        if method == "initialize":
-            headers["MCP-Protocol-Version"] = data.get("protocolVersion", "2025-03-26")
+                "The workspace HTTPS certificate is not trusted. Install the local stack CA in the OS trust store and retry."
+            ) from None
+        raise SetupError(
+            "Could not reach Strato OAuth. Check the workspace and network policy."
+        ) from None
+    except (ValueError, OSError):
+        raise SetupError(
+            "Native OAuth is not available at this Strato workspace. Check the deployment, HTTPS trust, and network policy, then retry."
+        ) from None

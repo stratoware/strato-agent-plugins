@@ -2,39 +2,37 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
+import re
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Callable
 from contextlib import contextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import tomlkit
-from credentials import SERVICE, credential_store
+from credentials import remove_legacy_credential
 from workspace import SetupError, is_local_workspace, server_name
 
 
-def helper_command(uv: str, script: Path, origin: str) -> str:
-    args = [
-        uv,
-        "run",
-        "--quiet",
-        "--locked",
-        "--script",
-        str(script),
-        "headers",
-        "--workspace-url",
-        origin,
-    ]
-    if is_local_workspace(origin):
-        args.append("--allow-local")
-    return shlex.join(args)
+def native_client_id(origin: str) -> str:
+    environment = (
+        "local"
+        if is_local_workspace(origin)
+        else "staging"
+        if urlsplit(origin).hostname.endswith(".staging.stratoware.io")
+        else "prod"
+    )
+    return f"strato-codex-{environment}"
 
 
-def prepare_config(text: str, origin: str, command: str) -> tuple[str, str]:
+def prepare_config(text: str, origin: str) -> tuple[str, str]:
     try:
         document = tomlkit.parse(text)
+        if document.get("mcp_oauth_credentials_store") == "file":
+            raise SetupError(
+                "Codex is configured to store OAuth credentials in a file. Select OS credential storage before connecting Strato."
+            )
         servers = document.setdefault("mcp_servers", tomlkit.table())
         matching = [
             name
@@ -43,7 +41,7 @@ def prepare_config(text: str, origin: str, command: str) -> tuple[str, str]:
         ]
         if len(matching) > 1:
             raise SetupError(
-                "Multiple MCP entries already use this workspace. Remove the duplicate in Codex Settings first."
+                "Multiple MCP entries use this workspace. Resolve the duplicate in Codex Settings first."
             )
         name = matching[0] if matching else server_name(origin)
         if not matching and name in servers:
@@ -51,14 +49,28 @@ def prepare_config(text: str, origin: str, command: str) -> tuple[str, str]:
                 f"The MCP entry {name} points elsewhere. Rename it in Codex Settings first."
             )
         server = servers.setdefault(name, tomlkit.table())
-        if "command" in server or "oauth" in server:
+        if "command" in server:
             raise SetupError(
-                "This workspace has a different connection method. Remove that entry in Codex Settings before guided setup."
+                "This workspace uses a different transport. Remove that entry in Codex Settings before setup."
             )
-        server["url"] = origin + "/api/mcp"
-        server["http_headers_helper"] = command
-        server["enabled"] = True
+        helper = server.get("http_headers_helper", "")
+        if helper and not (
+            "setup_codex.py" in helper and "headers" in helper and origin in helper
+        ):
+            raise SetupError(
+                "This workspace uses a custom credential helper. Remove it in Codex Settings before setup."
+            )
+        document["mcp_oauth_credentials_store"] = "keyring"
+        server.update(
+            url=origin + "/api/mcp", oauth_resource=origin + "/api/mcp", enabled=True
+        )
+        server["oauth"] = {
+            "client_id": native_client_id(origin),
+            "callback_url": "http://127.0.0.1/callback",
+        }
+        server["scopes"] = ["dhf:records:read", "dhf:development:write"]
         server.setdefault("default_tools_approval_mode", "writes")
+        server.pop("http_headers_helper", None)
         server.pop("bearer_token_env_var", None)
         for field in ("http_headers", "env_http_headers"):
             for header in list(server.get(field, {})):
@@ -103,57 +115,38 @@ def atomic_write(path: Path, content: bytes) -> None:
             os.unlink(temporary)
 
 
-def save_connection(
-    home: Path,
-    origin: str,
-    token: str,
-    uv: str,
-    confirm: Callable[[], None] | None = None,
-) -> str:
-    store = credential_store()
+def save_connection(home: Path, origin: str, codex: str) -> str:
     with config_lock(home):
         config = home / "config.toml"
         if config.is_symlink():
             raise SetupError(
-                "Codex config.toml is a symbolic link. Configure this managed installation manually."
+                "Codex config.toml is managed through a symbolic link. Contact your administrator before setup."
             )
         previous = config.read_bytes() if config.exists() else b""
-        destination = home / "strato-setup"
-        if destination.is_symlink():
-            raise SetupError(
-                "The Strato helper directory is a symbolic link. Remove that link before setup."
-            )
-        command = helper_command(uv, destination / "setup_codex.py", origin)
-        updated, name = prepare_config(previous.decode(), origin, command)
-        destination.mkdir(mode=0o700, exist_ok=True)
-        source = Path(__file__).parent
-        for item in source.iterdir():
-            if item.suffix in {".py", ".html", ".lock"}:
-                target = destination / item.name
-                if item.resolve() != target.resolve():
-                    atomic_write(target, item.read_bytes())
-        old_token = store.get_password(SERVICE, origin)
-        store.set_password(SERVICE, origin, token)
+        updated, name = prepare_config(previous.decode(), origin)
+        if previous and not (home / "config.toml.strato-backup").exists():
+            atomic_write(home / "config.toml.strato-backup", previous)
+        atomic_write(config, updated.encode())
         try:
-            if (config.read_bytes() if config.exists() else b"") != previous:
-                raise SetupError("Codex settings changed during setup. Try again.")
-            if previous and not (home / "config.toml.strato-backup").exists():
-                atomic_write(home / "config.toml.strato-backup", previous)
-            atomic_write(config, updated.encode())
-            if confirm is not None:
-                confirm()
+            result = subprocess.run(
+                [codex, "mcp", "login", name],
+                capture_output=True,
+                timeout=660,
+                check=False,
+            )
+            if result.returncode:
+                raise SetupError(
+                    "Authorization did not complete. Sign in and approve access in the browser, then try setup again. If consent succeeded, you can disconnect the unused authorization in Strato."
+                )
         except BaseException:
             if config.exists() and config.read_bytes() == updated.encode():
                 if previous:
                     atomic_write(config, previous)
                 else:
                     config.unlink()
-            if old_token is None:
-                store.delete_password(SERVICE, origin)
-            else:
-                store.set_password(SERVICE, origin, old_token)
             raise
-    return name
+        remove_legacy_credential(origin)
+        return name
 
 
 def install_plugin(codex: str) -> None:
@@ -205,36 +198,21 @@ def install_plugin(codex: str) -> None:
 
 def executables() -> tuple[str, str]:
     if os.name == "nt":
-        raise SetupError(
-            "Guided setup currently supports macOS and Linux. Use the manual connection guide on Windows."
-        )
+        raise SetupError("Guided setup currently supports macOS and Linux.")
     codex, uv = shutil.which("codex"), shutil.which("uv")
     if not codex or not uv:
         raise SetupError(
-            "Codex and uv must be available. Ask the setup chat to locate them or help install the missing prerequisite."
+            "Codex and uv must be available. Ask the setup chat to locate or install them."
         )
     try:
         result = subprocess.run(
-            [
-                codex,
-                "-c",
-                'mcp_servers.strato_setup_probe.url="https://example.invalid/mcp"',
-                "-c",
-                'mcp_servers.strato_setup_probe.http_headers_helper="strato-setup-probe"',
-                "mcp",
-                "get",
-                "strato_setup_probe",
-                "--json",
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=20,
+            [codex, "--version"], check=True, capture_output=True, text=True, timeout=20
         )
-        if not json.loads(result.stdout)["transport"].get("http_headers_helper"):
+        version = re.search(r"codex-cli (\d+)\.(\d+)\.(\d+)", result.stdout)
+        if version is None or tuple(map(int, version.groups())) < (0, 160, 0):
             raise ValueError()
-    except (subprocess.SubprocessError, OSError, ValueError, KeyError):
+    except (subprocess.SubprocessError, OSError, ValueError):
         raise SetupError(
-            "This Codex version does not support credential helpers. Update Codex before guided setup."
+            "Update Codex to version 0.160.0 or later before connecting Strato."
         ) from None
     return codex, uv

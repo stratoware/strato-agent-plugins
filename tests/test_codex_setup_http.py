@@ -6,7 +6,7 @@ import ssl
 import sys
 from pathlib import Path
 from unittest.mock import Mock
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError
 
 import pytest
 
@@ -18,58 +18,31 @@ ORIGIN = "https://acme.stratoware.io"
 TOKEN = "pqmcp_00000000-0000-4000-8000-000000000001_" + "x" * 43
 
 
-def test_verification_only_uses_dhf_read_tool(monkeypatch):
-    requests = []
+def test_native_discovery_checks_issuer_and_protocol(monkeypatch):
+    metadata = {
+        "issuer": ORIGIN,
+        "authorization_endpoint": ORIGIN + "/oauth/authorize",
+        "token_endpoint": ORIGIN + "/oauth/token",
+        "token_endpoint_auth_methods_supported": ["none"],
+        "code_challenge_methods_supported": ["S256"],
+        "authorization_response_iss_parameter_supported": True,
+    }
+    response = Mock()
+    response.__enter__ = Mock(return_value=response)
+    response.__exit__ = Mock(return_value=False)
+    response.read.return_value = json.dumps(metadata).encode()
     opener = Mock()
-
-    def respond(req, **kwargs):
-        assert req.full_url == ORIGIN + "/api/mcp"
-        assert req.get_header("Authorization") == "Bearer " + TOKEN
-        body = json.loads(req.data)
-        requests.append(body)
-        response = Mock()
-        response.headers = {}
-        response.__enter__ = Mock(return_value=response)
-        response.__exit__ = Mock(return_value=False)
-        response.read.return_value = json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "id": body.get("id"),
-                "result": {"protocolVersion": "2025-03-26"}
-                if body["method"] == "initialize"
-                else {"isError": False, "content": []},
-            }
-        ).encode()
-        return response
-
-    opener.open.side_effect = respond
-    monkeypatch.setattr(workspace, "build_opener", lambda *args: opener)
-    workspace.verify_token(ORIGIN, TOKEN)
-    assert requests[-1]["params"] == {"name": "products_list_v1", "arguments": {}}
-
-
-@pytest.mark.parametrize("status", [301, 302, 401, 403, 500])
-def test_bad_remote_responses_do_not_leak_credentials(monkeypatch, status):
-    opener = Mock()
-    opener.open.side_effect = HTTPError(ORIGIN, status, TOKEN, {}, None)
-    monkeypatch.setattr(workspace, "build_opener", lambda *args: opener)
-    with pytest.raises(workspace.SetupError) as error:
-        workspace.verify_token(ORIGIN, TOKEN)
-    assert TOKEN not in str(error.value)
+    opener.open.return_value = response
+    monkeypatch.setattr(workspace, "mcp_opener", lambda origin: opener)
+    workspace.verify_oauth_server(ORIGIN)
     assert (
-        workspace.NoRedirect().redirect_request(
-            None, None, status, "", {}, "https://evil.test"
-        )
-        is None
+        opener.open.call_args.args[0].full_url
+        == ORIGIN + "/.well-known/oauth-authorization-server"
     )
-
-
-def test_invalid_or_injected_token_never_reaches_network(monkeypatch):
-    opener = Mock()
-    monkeypatch.setattr(workspace, "build_opener", opener)
+    metadata["issuer"] = "https://attacker.test"
+    response.read.return_value = json.dumps(metadata).encode()
     with pytest.raises(workspace.SetupError):
-        workspace.verify_token(ORIGIN, TOKEN + "\r\nX-Injected: value")
-    opener.assert_not_called()
+        workspace.verify_oauth_server(ORIGIN)
 
 
 class TestLocalTransport:
@@ -117,14 +90,14 @@ class TestLocalTransport:
         build = Mock()
         monkeypatch.setattr(workspace, "build_opener", build)
         with pytest.raises(workspace.SetupError, match="loopback"):
-            workspace.verify_token(self.origin, TOKEN, allow_local=True)
+            workspace.verify_oauth_server(self.origin, allow_local=True)
         build.assert_not_called()
 
     def test_local_verification_cannot_skip_opt_in(self, monkeypatch):
         opener = Mock()
         monkeypatch.setattr(workspace, "mcp_opener", opener)
         with pytest.raises(workspace.SetupError, match="allow-local"):
-            workspace.verify_token(self.origin, TOKEN)
+            workspace.verify_oauth_server(self.origin)
         opener.assert_not_called()
 
     def test_untrusted_certificate_has_actionable_credential_free_error(
@@ -136,5 +109,5 @@ class TestLocalTransport:
         with pytest.raises(
             workspace.SetupError, match="certificate is not trusted"
         ) as error:
-            workspace.verify_token(self.origin, TOKEN, allow_local=True)
+            workspace.verify_oauth_server(self.origin, allow_local=True)
         assert TOKEN not in str(error.value)

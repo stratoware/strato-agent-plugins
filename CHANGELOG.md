@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.3.0
+
+- Connect through Codex native OAuth on macOS and Linux with Codex 0.160.0 or later. Sign in and approve access in Strato; Codex stores credentials in the OS credential store and renews short-lived access automatically.
+- Replace the custom approval-code and credential-helper flow. Preserve unrelated settings and remove the matching Strato legacy credential after successful native authorization.
+- Retire manual personal-token instructions. Claude plugin packaging remains available; Claude connection support is planned. Deploy with the matching Strato OAuth backend and edge validation.
+
 ## 0.2.5
 
 - Add guided Codex installation from Strato **Profile → Connectors** on macOS and Linux with an OS credential store. Approve workspace access in the browser; setup installs the plugin and configures MCP without copying a token or editing configuration.

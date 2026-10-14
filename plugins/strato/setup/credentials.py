@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import secrets
+
 import keyring
 from workspace import SetupError
 
@@ -21,10 +23,28 @@ def credential_store():
     return backend
 
 
-def read_token(origin: str) -> str:
-    token = credential_store().get_password(SERVICE, origin)
-    if not token:
+def check_credential_store() -> None:
+    backend = credential_store()
+    name = "setup-probe-" + secrets.token_hex(16)
+    try:
+        backend.set_password(SERVICE, name, name)
+        if backend.get_password(SERVICE, name) != name:
+            raise SetupError(
+                "The OS credential store could not verify secure storage. Unlock it and retry."
+            )
+    except Exception:
         raise SetupError(
-            "No Strato token is saved. Run guided setup for this workspace again."
-        )
-    return token
+            "The OS credential store is unavailable or locked. Unlock it and retry; no plaintext fallback is used."
+        ) from None
+    finally:
+        try:
+            backend.delete_password(SERVICE, name)
+        except keyring.errors.PasswordDeleteError:
+            pass
+
+
+def remove_legacy_credential(origin: str) -> None:
+    try:
+        credential_store().delete_password(SERVICE, origin)
+    except keyring.errors.PasswordDeleteError:
+        pass
