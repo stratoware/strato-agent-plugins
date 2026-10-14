@@ -2,43 +2,17 @@
 
 [← Overview](../README.md) · [Claude Code guide](claude-code.md)
 
-You need a Strato account and a Codex version with plugin marketplace support.
-
-For guided installation on macOS and Linux with an OS credential store, open **Profile → Connectors → Set up Codex** in an updated Strato workspace and follow [guided Codex setup](codex-guided-setup.md). The manual instructions below remain available on every supported platform.
+You need a Strato account, Codex 0.160.0 or later on macOS or Linux, and an unlocked OS credential store.
 
 ## 1. Install the plugin
 
-Run these commands in a terminal:
-
-```bash
-codex plugin marketplace add stratoware/strato-agent-plugins --ref stable
-codex plugin add strato@strato
-```
+In Strato, open **Profile → Connectors → Open Codex** and send the prepared setup request. Codex installs the plugin for you. See [guided setup](codex-guided-setup.md) for details and recovery.
 
 ## 2. Connect Strato
 
-Installing the plugin adds the skills. Set up its connection below, or update the approval setting on your existing Strato connection.
+Approve access in the Strato browser page that Codex opens. Sign in if needed, check the workspace and user, and choose read-only or read-and-write DHF access. Codex stores and renews credentials automatically.
 
-[Create a Strato access token →](strato-token.md)
-
-Make the token available to the Codex process as the environment variable `STRATO_MCP_TOKEN`. Keep its value out of project files and chat prompts.
-
-Add or update this entry in `~/.codex/config.toml`:
-
-```toml
-[mcp_servers.strato]
-url = "https://YOUR-TENANT.stratoware.io/api/mcp"
-bearer_token_env_var = "STRATO_MCP_TOKEN"
-default_tools_approval_mode = "approve"
-```
-
-Replace `YOUR-TENANT` with your Strato subdomain. For example, `https://acme.stratoware.io` becomes `https://acme.stratoware.io/api/mcp`.
-
-The `approve` setting automatically approves Strato's read and write tool calls. For a connection limited to one project, use that project's `.codex/config.toml` instead.
-
-Restart Codex with the token available in its environment. Setting a variable in an unrelated terminal does not make it available to an already-running desktop app. See [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp).
-
-Ask in a new task: **“List the Strato products I can access using MCP.”**
+Restart Codex if prompted, then ask: **“List the Strato products I can access using MCP.”** A successful tool request changes the Strato connection status from **Authorized** to **Connected**. Manage permissions, expiry, and Disconnect in **Profile → Connectors**.
 
 ## 3. Use Strato
 
@@ -71,6 +45,6 @@ Check the [release notes](../CHANGELOG.md). For pinned releases or local install
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | Installation cannot find the repository | Check the repository name and your network access to GitHub.                                                                              |
 | Skills do not appear                    | Confirm the plugin is installed and enabled, then start a new task or restart Codex. Workspace plugin policies may restrict availability. |
-| Strato will not connect                 | Check the tenant URL, token validity, and whether the Codex process received `STRATO_MCP_TOKEN`.                                          |
-| Reviews work but authoring does not     | Check the token's write permission and the server capabilities reported by the skill.                                                     |
+| Strato will not connect                 | Check the connection status in Strato; reconnect if expired or disconnected.                                          |
+| Reviews work but authoring does not     | Check the connection’s granted permissions and the server capabilities reported by the skill.                                                     |
 | The same skill appears twice            | See [duplicate installations](reference.md#duplicate-skills).                                                                             |
