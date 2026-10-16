@@ -18,7 +18,7 @@ Codex supports guided installation and native OAuth. Claude plugin packaging is 
 
 For guided Codex installation on macOS and Linux with an OS credential store, start in Strato **Profile → Connectors → Open Codex**. [Approve access in your browser](docs/codex-guided-setup.md), then restart Codex to use the connection.
 
-You need a Strato account with MCP access. Claude Code connection implementation and runtime testing remain deferred.
+You need a Strato account with MCP access. Claude Code connection support is planned.
 
 The public repository contains release snapshots. Development history is maintained separately.
 
