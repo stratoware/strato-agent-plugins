@@ -1,6 +1,6 @@
 # Guided Codex setup
 
-Connect from Strato with Codex 0.160.0 or later on macOS or Linux and an unlocked OS credential store. Codex installs the plugin, handles OAuth, and renews access automatically. No token copying, environment variables, or configuration editing is required. Public-directory registration and hosted OpenAI connections are separate.
+Connect from Strato with Codex 0.160.0 or later on macOS or Linux and an unlocked OS credential store. Codex installs the plugin, handles OAuth, and renews access automatically. No token copying, environment variables, or configuration editing is required.
 
 ## Connect from Strato
 
@@ -15,19 +15,13 @@ The Codex card shows permissions, authorization date, expiry, and last successfu
 ## Instructions for the setup agent
 
 - Work locally. Read this guide and the helper source first. Preserve the customer's project and unrelated Codex settings.
-- Use a separate checkout of `https://github.com/stratoware/strato-agent-plugins` at `stable`. If the Strato request specifies a staging candidate from `https://github.com/stratoware/strato-agent-plugins-dev`, verify the exact requested commit. Staging testers need repository access. Inspect the remote and local changes before reusing a checkout. An explicitly authorized local pilot may use the specified reviewed checkout.
+- Use a separate checkout of `https://github.com/stratoware/strato-agent-plugins` at `stable`. Inspect the remote and local changes before reusing a checkout.
 - Locate Codex and `uv`, including the desktop app's bundled CLI if necessary. Help install missing prerequisites from official sources. The agent performs commands on the user's behalf.
 - Run `uv run --locked --script plugins/strato/setup/setup_codex.py connect --workspace-url https://YOUR-WORKSPACE.stratoware.io` with the supplied workspace. Keep it running during browser approval.
 - Let the user sign in, choose permissions, and approve. Do not approve on their behalf, create manual tokens, or inspect OAuth credentials.
 - The helper checks Codex's version and the OS credential store, registers the official marketplace at `stable` if absent, and installs `strato@strato`. An existing official marketplace retains its selected ref; a conflicting marketplace is rejected.
 - The helper configures the registered public OAuth client, PKCE resource binding, and `mcp_oauth_credentials_store = "keyring"`, then runs `codex mcp login`. Codex manages credential storage and renewal; the helper never redeems or stores access tokens.
 - After successful authorization, explain restart guidance and ask the user to verify a Strato read. Installation alone does not prove a successful tool request.
-
-## Local development and release
-
-The application, signing infrastructure, edge Worker, and installer must be released together. Staging uses a pinned candidate from the private repository. Publish the helper to public `stable` only after the native renewal and security gates pass, before updating the production setup request. There are no customer-facing feature switches.
-
-For local development, use `https://TENANT.stratoware.localhost:PORT` with `--allow-local`. The hostname must resolve only to loopback. Trust the mkcert CA in the OS certificate store and retain HTTPS verification. Set `VITE_STRATO_SETUP_CHECKOUT` in the frontend's ignored `.env.development.local` to the reviewed checkout; production builds ignore this setting. Plugin skills still install from the official repository marketplace.
 
 ## Storage and recovery
 

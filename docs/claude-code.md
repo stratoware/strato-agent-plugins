@@ -19,7 +19,7 @@ Start a new session after installation. See [Claude Code plugin installation](ht
 
 Claude connection support is **planned**. This release registers a native Codex OAuth client only. The Claude plugin package remains available, but do not use the retired personal-token setup against updated Strato workspaces. Use [Codex guided setup](codex-guided-setup.md) for a supported connection.
 
-The remaining skill and update instructions describe the plugin package; runtime validation in Claude remains deferred.
+The remaining instructions describe how to use and update the skill package.
 
 ## 3. Use Strato
 
@@ -62,5 +62,5 @@ For pinned releases or local installations, see [advanced setup](reference.md#in
 | Skills do not appear                    | Check that `strato@strato` is installed and enabled in `/plugin`, then start a new session.        |
 | Strato will not connect                 | Claude OAuth connection support is planned; use Codex for supported access. |
 | Project server awaits approval          | Approve the Strato entry when Claude Code asks to load the project's MCP configuration.            |
-| Reviews work but authoring does not     | Claude runtime support is deferred.              |
+| Reviews work but authoring does not     | Use Codex for supported access.              |
 | The same skill appears twice            | See [duplicate installations](reference.md#duplicate-skills).                                      |
