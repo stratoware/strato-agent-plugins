@@ -17,7 +17,7 @@ Apply explicitly requested changes without asking for the same permission again.
 
 Follow Strato's specification-authoring guidance: concise noun-phrase titles and verifiable “shall” requirements. Name components by function and put component selections and internal register or byte layouts in linked designs when useful. Retain details that express required interface or compatibility constraints. Give each specification the behavior, conditions, and supported acceptance criteria needed to write a Test Case; ask for missing criteria.
 
-Use Markdown and Mermaid for designs and discover engineering artifact support from the server.
+Before drafting or revising Design Elements, read [Design Element authoring](references/design-elements.md) for their technical scope, expected depth, and use of diagrams. Discover engineering artifact support from the server.
 
 Before creating or moving folders, read [Folder organization](references/folder-organization.md). Reuse suitable existing groupings and resolve overlapping taxonomies before adding another branch.
 
