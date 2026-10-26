@@ -9,6 +9,8 @@ Compare the current project with its Strato product. Read and follow the [shared
 
 User Needs explain the why. Product Requirements and Specifications define the what. Design Elements describe the how through design and architecture.
 
+Before assessing or drafting designs, read [Design Element authoring](../strato/references/design-elements.md) for their technical scope, expected depth, and use of diagrams.
+
 Use functional component names in specifications. Put selected component models and internal details such as register addresses or byte layouts in linked Design Elements when useful. Keep specific interface details in a specification when they express a required compatibility constraint.
 
 Each specification should support a Test Case with a clear pass/fail result. State the required behavior, relevant conditions, and supported acceptance criteria; ask for missing criteria rather than deriving requirements directly from implementation constants.
@@ -45,7 +47,7 @@ For each relevant engineering area, assess both existing specifications and miss
 
 Match records by meaning as well as IDs and relationships. Distinguish “not found in this folder” from “not implemented.” Code is evidence, not automatic authority over intended behavior; dates alone do not establish staleness.
 
-Discuss meaningful gaps with evidence and recommendations, including the full baseline scope on first sync. Grouped summaries should not replace individual requirements with capability summaries.
+Discuss meaningful gaps with evidence and recommendations in chat, including the full baseline scope on first sync. These alignment findings are not Design Element content. Grouped summaries should not replace individual requirements with capability summaries.
 
 ## Apply selected changes
 

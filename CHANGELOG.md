@@ -1,5 +1,10 @@
 # Release notes
 
+## 0.3.2
+
+- Focus Design Elements on technical design and architecture beyond specifications, usually a couple of short paragraphs and a diagram.
+- Keep implementation status, schedules, release slices, and task lists out of Design Elements when syncing repository content.
+
 ## 0.3.1
 
 - Simplify the distribution package and setup documentation. Connection and skill behavior is unchanged.

@@ -6,7 +6,7 @@ Start with the existing documented requirements and designs. Preserve each ident
 
 Inventory every requirement in the selected scope and compare it with current Strato records, implementation, and upstream intent. Use the source document and section to distinguish entries when IDs repeat. Account for each item as new, changed, already present, unresolved, or excluded with a reason. Propose consolidation separately from importing the baseline.
 
-Before import, assess the source against Strato's specification-authoring guidance for style, structure, verifiability, and the boundary between specifications and design. Recommend needed source improvements, including clearer wording, splitting independent obligations, and separating implementation explanations into linked Design Elements. Keep required behavior and supported constraints in specifications; designs explain the mechanisms and rationale.
+Before import, assess the source against Strato's specification-authoring guidance for style, structure, verifiability, and the boundary between specifications and design. Recommend needed source improvements, including clearer wording, splitting independent obligations, and separating technical design explanations into linked Design Elements. Keep required behavior and supported constraints in specifications; extract and condense designs according to [Design Element authoring](../../strato/references/design-elements.md).
 
 Use concise noun-phrase titles and verifiable “shall” requirements, preserving the intended meaning and correcting obsolete details where evidence supports the change. Follow the import field guidance in [shared MCP operations](../../strato/references/mcp-operations.md).
 
