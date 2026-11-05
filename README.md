@@ -1,6 +1,6 @@
 # Strato agent plugins
 
-Work with your Strato Design History File from Codex or Claude Code. Maintained by **Stratoware LLC**.
+Work with your Strato Design History File from Codex, Claude, or Claude Code. Maintained by **Stratoware LLC**.
 
 | Skill | Purpose |
 | --- | --- |
@@ -14,7 +14,9 @@ Work with your Strato Design History File from Codex or Claude Code. Maintained 
 | ----------------------------------- | ----------------------------------------------- |
 | [**Set up Codex →**](docs/codex.md) | [**Set up Claude Code →**](docs/claude-code.md) |
 
-Codex supports guided installation and native OAuth. Claude plugin packaging is retained; Claude connection support is planned.
+For **Claude web, Claude Desktop, or Cowork**, connect from Strato Settings → Connectors, then [add the Strato repository marketplace](docs/claude-skills.md). The connector and skills are installed separately.
+
+Codex supports guided installation and native OAuth. Claude Code plugin packaging is retained; Claude Code connection support is planned.
 
 For guided Codex installation on macOS and Linux with an OS credential store, start in Strato **Profile → Connectors → Open Codex**. [Approve access in your browser](docs/codex-guided-setup.md), then restart Codex to use the connection.
 
@@ -32,7 +34,7 @@ Sync skills inspect the current folder and available Strato records and present 
 
 ## More information
 
-- **Update:** [Codex](docs/codex.md#4-update-the-plugin) · [Claude Code](docs/claude-code.md#4-update-the-plugin)
+- **Update:** [Plugin distribution and updates](docs/plugin-distribution.md)
 - **Troubleshoot:** [Codex](docs/codex.md#5-troubleshoot) · [Claude Code](docs/claude-code.md#5-troubleshoot)
 - [Release notes](CHANGELOG.md) · [Advanced setup and technical reference](docs/reference.md)
 - [Support and contributions](CONTRIBUTING.md) · [Security reporting](SECURITY.md)

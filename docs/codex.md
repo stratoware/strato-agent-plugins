@@ -28,16 +28,7 @@ Select **Strato Design Sync** or **Strato Verification Sync** from the same slas
 
 ## 4. Update the plugin
 
-Run in a terminal:
-
-```bash
-codex plugin marketplace upgrade strato
-codex plugin add strato@strato
-```
-
-This refreshes the `stable` catalog and reinstalls from it. Start a new task afterward. Updates are manual in this guide.
-
-Check the [release notes](../CHANGELOG.md). For pinned releases or local installations, see [advanced setup](reference.md#installation-options).
+Follow the shared [Codex update instructions](plugin-distribution.md#codex). They refresh the registered marketplace and reinstall the plugin while preserving the selected release channel.
 
 ## 5. Troubleshoot
 
