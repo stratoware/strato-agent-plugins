@@ -1,5 +1,9 @@
 # Release notes
 
+## 0.3.3
+
+- Add Claude repository installation instructions and a shared plugin update guide. Skill behavior is unchanged.
+
 ## 0.3.2
 
 - Focus Design Elements on technical design and architecture beyond specifications, usually a couple of short paragraphs and a diagram.
